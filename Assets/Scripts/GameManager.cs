@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI gameOverText;
     public string word;
     public static bool isGameOver = false;
+    private HashSet<char> wordSet = new HashSet<char>();
+    private HashSet<char> usedSet = new HashSet<char>();
 
 
     private string res1;
@@ -30,6 +32,10 @@ public class GameManager : MonoBehaviour
         {
             res1 = res1 + "_";
             res2 = res2 + "_";
+        }
+        foreach (char c in word)
+        {
+            wordSet.Add(c);
         }
         UpdateScores(res1, res2);
     }
@@ -48,12 +54,22 @@ public class GameManager : MonoBehaviour
             char[] res1Chars = res1.ToCharArray();
             res1Chars[pos] = currChar;
             res1 = new string(res1Chars);
+             if(res2.Contains(curr)) 
+             {
+                usedSet.Add(currChar); // add to usedSet
+                wordSet.Remove(currChar); // remove from wordSet
+             }
         }
         else if (id == 2 && !res2.Contains(curr))
         {
             char[] res2Chars = res2.ToCharArray();
             res2Chars[pos] = currChar;
             res2 = new string(res2Chars);
+            if (res1.Contains(curr))
+            {
+                usedSet.Add(currChar);
+                wordSet.Remove(currChar);
+            }
         }
         if (IsWordCompleted(res1, word))
         {
@@ -70,8 +86,15 @@ public class GameManager : MonoBehaviour
         UpdateScores(res1, res2);
         if (!isGameOver)
         {
-            int idx = Random.Range(0, word.Length);
-            ballText.setText(word[idx].ToString());
+            if (wordSet.Count == 0)
+            {
+                Debug.LogWarning("All characters are used!");
+                return;
+            }
+            List<char> remainingChars = new List<char>(wordSet);
+            int idx = Random.Range(0, remainingChars.Count);
+            char nextChar = remainingChars[idx];
+            ballText.setText(nextChar.ToString());
 
         }
     }
